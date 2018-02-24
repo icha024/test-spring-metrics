@@ -3,7 +3,6 @@ package com.clianz;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.codahale.metrics.annotation.Timed;
 import io.micrometer.core.instrument.Metrics;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,17 +12,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
+
 @RestController
 public class HelloController {
 
     @Autowired
-    private MetricRegistry metricRegistry = new MetricRegistry();
+    public HelloController(MetricRegistry metricRegistry) {
+        this.metricRegistry = metricRegistry;
+    }
 
-//    private Timer timer = metricRegistry.timer(name(HelloController.class, "responses"));
-    private Timer timer = metricRegistry.timer("calcTimer");
+    @PostConstruct
+    public void setupReg() {
+        timer = metricRegistry.timer("calcTimer");
+        meter = metricRegistry.meter("calcMeter");
+    }
+
+    private MetricRegistry metricRegistry;
+
+    //    private Timer timer = metricRegistry.timer(name(HelloController.class, "responses"));
+//    private Timer timer = metricRegistry.timer("calcTimer");
+    private Timer timer;
 
 //    private Meter meter = metricRegistry.meter(name(HelloController.class, "responseCount"));
-    private Meter meter = metricRegistry.meter("calcMeter");
+//    private Meter meter = metricRegistry.meter("calcMeter");
+    private Meter meter;
 
     private io.micrometer.core.instrument.Counter counter = Metrics.counter("calc.calls", "uri", "/messages");
 
@@ -43,13 +56,10 @@ public class HelloController {
     }
 
     // SQL sample
-    @Timed
+//    @Timed
     @RequestMapping("calc")
     Result calc(@RequestParam int left, @RequestParam int right) {
-
-
-
-        final Timer.Context context = timer.time();
+        Timer.Context context = timer.time();
         meter.mark();
         counter.increment();
         try {

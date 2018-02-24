@@ -64,4 +64,9 @@ public class AppConfig {
         servletRegistrationBean.setLoadOnStartup(1);
         return servletRegistrationBean;
     }
+
+//    @Bean
+//    public MetricRegistry metricRegistry() {
+//        return new MetricRegistry();
+//    }
 }
